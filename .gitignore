@@ -1,0 +1,10 @@
+bobao
+bobao-linux
+bobao.exe
+*.log
+last_msg.json
+.env
+.DS_Store
+.cursor/
+AGENTS.md
+progress.md
