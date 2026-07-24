@@ -1,4 +1,4 @@
-.PHONY: build linux test
+.PHONY: build linux test examples
 
 # 默认产物名 bobao
 build:
@@ -9,3 +9,6 @@ linux:
 
 test:
 	go test ./...
+
+examples:
+	go run ./tools/gen_examples/

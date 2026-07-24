@@ -20,6 +20,22 @@
 
 ---
 
+## 效果示例
+
+频道消息为 **开奖图 + 文字说明 + 底部按钮**（遗漏 / 统计 / 对应）。以下为真实渲染效果示意：
+
+### `0+0+0=00`（小双 豹子）
+
+![开奖示例 0+0+0=00](assets/examples/example_0+0+0=00.jpg)
+
+### `9+9+9=27`（大单 豹子）
+
+![开奖示例 9+9+9=27](assets/examples/example_9+9+9=27.jpg)
+
+> 重新生成示例图：`go run ./tools/gen_examples/`
+
+---
+
 ## 系统架构
 
 ```text
@@ -78,7 +94,10 @@
 ├── .env.example            # 环境变量模板（勿提交真实密钥）
 ├── assets/
 │   ├── draw_bg.jpg         # 开奖图底图
-│   └── AlimamaShuHeiTi-Bold.ttf
+│   ├── AlimamaShuHeiTi-Bold.ttf
+│   └── examples/           # README 效果示例图
+├── tools/
+│   └── gen_examples/       # 生成示例图
 ├── config/
 │   └── config.go           # 环境变量加载与校验
 └── service/
