@@ -2,9 +2,12 @@
 
 面向 Telegram **频道**的加拿大 28（PC28）开奖自动播报机器人。
 
-新开奖到达后，自动向频道发送图文消息；可一键查看遗漏、今日统计，并跳转同和值历史开奖。数据来自 [pc28.help](https://pc28.help) 公开接口。
+新开奖到达后，自动向频道发送图文消息；可一键查看遗漏、今日统计，并跳转同和值历史开奖。数据来自 [pc28.help](https://pc28.help) 公开接口。开源分享，允许二开与商用。
 
-**作者**：[Telegram @yuuu](https://t.me/yuuu) · 仅作开源分享与交流
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.25+-00ADD8.svg)](https://go.dev/)
+
+**作者**：[Telegram @yuuu](https://t.me/yuuu)
 
 ---
 
@@ -197,17 +200,12 @@ make test
 
 ---
 
-## 许可证
+## License
 
-本项目采用 [MIT License](LICENSE)。
+[MIT](LICENSE)
 
 - **允许**二次开发、修改、分发与商业使用。
 - 作者仅作开源分享与技术交流，**不参与、不背书、不承担**任何二开或商业用途的责任与纠纷。
 - 使用本项目即表示你自行负责合规、运营与风险。
 
----
-
-## 作者
-
-- Telegram：[@yuuu](https://t.me/yuuu)
-- 定位：开源分享 / 交流；Issue 与建议可通过 Telegram 联系
+**作者**：[Telegram @yuuu](https://t.me/yuuu)
