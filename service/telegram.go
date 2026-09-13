@@ -193,12 +193,12 @@ func (ts *TelegramService) sendPhoto(chatID int64, photo []byte, caption, keyboa
 }
 
 func formatMessage(r *DrawResult) string {
-	patternPart := ""
-	if r.Pattern != "" && r.Pattern != "杂六" {
-		patternPart = " " + r.Pattern
+	pattern := strings.TrimSpace(r.Pattern)
+	if pattern != "" {
+		pattern = " " + pattern
 	}
-	return fmt.Sprintf("🆕<b>第</b><code>%d</code><b>期</b> <code>%d+%d+%d=%02d</code> <b>%s%s%s</b>",
-		r.Qihao, r.Numbers[0], r.Numbers[1], r.Numbers[2], r.Sum, r.SizeType, r.ParityType, patternPart)
+	return fmt.Sprintf("<b>📢%d期 %d+%d+%d=%d %s%s%s</b>",
+		r.Qihao, r.Numbers[0], r.Numbers[1], r.Numbers[2], r.Sum, r.SizeType, r.ParityType, pattern)
 }
 
 func buildKeyboard() string {

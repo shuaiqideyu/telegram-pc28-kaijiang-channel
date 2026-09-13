@@ -28,12 +28,12 @@ func TestBuildKeyboard(t *testing.T) {
 	}
 }
 
-func TestFormatMessageOmitsZaliu(t *testing.T) {
+func TestFormatMessageBoldPlain(t *testing.T) {
 	msg := formatMessage(&DrawResult{
-		Qihao: 3461131, Numbers: [3]int{4, 8, 2}, Sum: 14,
-		SizeType: "小", ParityType: "双", Pattern: "杂六",
+		Qihao: 3481673, Numbers: [3]int{1, 3, 5}, Sum: 9,
+		SizeType: "小", ParityType: "单", Pattern: "杂六",
 	})
-	want := "🆕<b>第</b><code>3461131</code><b>期</b> <code>4+8+2=14</code> <b>小双</b>"
+	want := "<b>📢3481673期 1+3+5=9 小单 杂六</b>"
 	if msg != want {
 		t.Fatalf("got=%q want=%q", msg, want)
 	}
