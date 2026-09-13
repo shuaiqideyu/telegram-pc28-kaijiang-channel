@@ -204,11 +204,11 @@ func formatMessage(r *DrawResult) string {
 func buildKeyboard() string {
 	rows := [][]keyboardButton{
 		{
-			{Text: "统计", CallbackData: statsCallback},
-			{Text: "预测开奖网", URL: siteURL},
+			{Text: "📉统计", CallbackData: statsCallback},
+			{Text: "🇨🇦预测开奖网", URL: siteURL},
 		},
 		{
-			{Text: "南宫集团官方频道", URL: nangongURL},
+			{Text: "🏆南宫集团官方频道", URL: nangongURL},
 		},
 	}
 	keyboardJSON, _ := json.Marshal(struct {

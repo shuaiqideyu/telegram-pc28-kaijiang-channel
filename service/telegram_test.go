@@ -16,14 +16,14 @@ func TestBuildKeyboard(t *testing.T) {
 		t.Fatalf("rows=%d", len(kb.InlineKeyboard))
 	}
 	row1 := kb.InlineKeyboard[0]
-	if len(row1) != 2 || row1[0].Text != "统计" || row1[0].CallbackData != statsCallback {
+	if len(row1) != 2 || row1[0].Text != "📉统计" || row1[0].CallbackData != statsCallback {
 		t.Fatalf("row1[0]=%+v", row1[0])
 	}
-	if row1[1].Text != "预测开奖网" || row1[1].URL != siteURL {
+	if row1[1].Text != "🇨🇦预测开奖网" || row1[1].URL != siteURL {
 		t.Fatalf("row1[1]=%+v", row1[1])
 	}
 	row2 := kb.InlineKeyboard[1]
-	if len(row2) != 1 || row2[0].Text != "南宫集团官方频道" || row2[0].URL != nangongURL {
+	if len(row2) != 1 || row2[0].Text != "🏆南宫集团官方频道" || row2[0].URL != nangongURL {
 		t.Fatalf("row2[0]=%+v", row2[0])
 	}
 }
