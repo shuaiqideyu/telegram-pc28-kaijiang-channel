@@ -10,12 +10,7 @@ import (
 	"time"
 )
 
-const (
-	kjURL        = "https://pc28.help/api/kj.json"
-	ylURL        = "https://pc28.help/api/yl.json"
-	ykURL        = "https://pc28.help/api/yk.json"
-	pollInterval = 500 * time.Millisecond
-)
+const pollInterval = 500 * time.Millisecond
 
 // DrawResult 单期开奖结果。
 type DrawResult struct {
@@ -27,16 +22,25 @@ type DrawResult struct {
 	Pattern    string // 豹子/对子/顺子/杂六
 }
 
-var pc28Client *http.Client
+var (
+	drawClient *http.Client
+	drawAPIKey string
+	kjURL      string
+)
 
-// InitPC28 初始化 pc28.help 共享 HTTP 客户端（开奖/遗漏/统计共用）。
-func InitPC28() {
-	ip := resolveDNS("pc28.help")
-	pc28Client = &http.Client{Timeout: 5 * time.Second, Transport: pinnedTransport(ip)}
-	if _, err := httpGet(pc28Client, kjURL); err != nil {
+// InitDrawSource 初始化 yu28 开奖客户端（只读 kj.json）。
+func InitDrawSource(baseURL, apiKey string) {
+	drawAPIKey = strings.TrimSpace(apiKey)
+	base := strings.TrimRight(strings.TrimSpace(baseURL), "/")
+	if base == "" {
+		base = "https://yu28.top"
+	}
+	kjURL = base + "/api/kj.json"
+	drawClient = &http.Client{Timeout: 5 * time.Second, Transport: ipv4Transport()}
+	if _, err := httpGet(drawClient, kjURL); err != nil {
 		log.Printf("[开奖] 预热失败: %v", err)
 	}
-	log.Printf("[开奖] pc28.help 客户端就绪 (IP: %s)", ip)
+	log.Printf("[开奖] yu28 客户端就绪")
 }
 
 // FetchLatestDraw 启动时获取当前最新期号。
@@ -66,28 +70,11 @@ func pollKJLoop(lastQ int, ch chan<- *DrawResult) {
 }
 
 func fetchKJOnce() (*DrawResult, error) {
-	data, err := httpGet(pc28Client, kjURL)
+	data, err := httpGet(drawClient, kjURL)
 	if err != nil {
 		return nil, err
 	}
 	return parseKJJSON(data)
-}
-
-func fetchPC28Map(url string) (map[string]int, error) {
-	body, err := httpGet(pc28Client, url)
-	if err != nil {
-		return nil, err
-	}
-	var raw struct {
-		Data map[string]int `json:"data"`
-	}
-	if err := json.Unmarshal(body, &raw); err != nil {
-		return nil, err
-	}
-	if len(raw.Data) == 0 {
-		return nil, fmt.Errorf("data empty")
-	}
-	return raw.Data, nil
 }
 
 func parseKJJSON(data []byte) (*DrawResult, error) {
@@ -115,12 +102,11 @@ func parseKJJSON(data []byte) (*DrawResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	sum, err := strconv.Atoi(strings.TrimSpace(item.Num))
-	if err != nil {
-		return nil, fmt.Errorf("kj num invalid: %q", item.Num)
-	}
-	if nums[0]+nums[1]+nums[2] != sum {
-		return nil, fmt.Errorf("kj sum mismatch: %s=%d", item.Number, sum)
+	sum := nums[0] + nums[1] + nums[2]
+	if declared, ok, err := parseDeclaredSum(item.Number, item.Num); err != nil {
+		return nil, err
+	} else if ok && declared != sum {
+		return nil, fmt.Errorf("kj sum mismatch: %s=%d", item.Number, declared)
 	}
 	size, parity, err := parseCombination(item.Combination)
 	if err != nil {
@@ -138,7 +124,11 @@ func parseKJJSON(data []byte) (*DrawResult, error) {
 }
 
 func parseDrawNumber(raw string) ([3]int, error) {
-	parts := strings.Split(raw, "+")
+	body := strings.TrimSpace(raw)
+	if i := strings.Index(body, "="); i >= 0 {
+		body = strings.TrimSpace(body[:i])
+	}
+	parts := strings.Split(body, "+")
 	if len(parts) != 3 {
 		return [3]int{}, fmt.Errorf("开奖号格式无效: %s", raw)
 	}
@@ -151,6 +141,24 @@ func parseDrawNumber(raw string) ([3]int, error) {
 		nums[i] = n
 	}
 	return nums, nil
+}
+
+func parseDeclaredSum(number, num string) (int, bool, error) {
+	if s := strings.TrimSpace(num); s != "" {
+		n, err := strconv.Atoi(s)
+		if err != nil {
+			return 0, false, fmt.Errorf("kj num invalid: %q", num)
+		}
+		return n, true, nil
+	}
+	if i := strings.Index(number, "="); i >= 0 {
+		n, err := strconv.Atoi(strings.TrimSpace(number[i+1:]))
+		if err != nil {
+			return 0, false, fmt.Errorf("开奖号和值无效: %s", number)
+		}
+		return n, true, nil
+	}
+	return 0, false, nil
 }
 
 func parseCombination(raw string) (size, parity string, err error) {

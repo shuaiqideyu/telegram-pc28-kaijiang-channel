@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"testing"
 )
 
@@ -25,6 +24,23 @@ func TestParseKJJSON(t *testing.T) {
 	}
 }
 
+func TestParseKJJSONYu28SumForm(t *testing.T) {
+	raw := []byte(`{"countdown":"02:40","data":[{"nbr":"3463701","time":"2026-07-31 11:25:00","number":"4+8+2=14","combination":"小双"}],"message":"success"}`)
+	result, err := parseKJJSON(raw)
+	if err != nil {
+		t.Fatalf("parseKJJSON yu28: %v", err)
+	}
+	if result.Qihao != 3463701 {
+		t.Fatalf("qihao=%d", result.Qihao)
+	}
+	if result.Numbers != [3]int{4, 8, 2} || result.Sum != 14 {
+		t.Fatalf("numbers/sum=%v/%d", result.Numbers, result.Sum)
+	}
+	if result.SizeType != "小" || result.ParityType != "双" {
+		t.Fatalf("combination=%s%s", result.SizeType, result.ParityType)
+	}
+}
+
 func TestParseKJJSONRejectsSumMismatch(t *testing.T) {
 	raw := []byte(`{"data":[{"nbr":"1","number":"1+2+3","num":"9","combination":"小双"}],"message":"success"}`)
 	if _, err := parseKJJSON(raw); err == nil {
@@ -32,24 +48,9 @@ func TestParseKJJSONRejectsSumMismatch(t *testing.T) {
 	}
 }
 
-func TestBuildKeyboard(t *testing.T) {
-	ts := &TelegramService{username: "fw999"}
-
-	var keyboard struct {
-		InlineKeyboard [][]keyboardButton `json:"inline_keyboard"`
-	}
-	if err := json.Unmarshal([]byte(ts.buildKeyboard(123)), &keyboard); err != nil {
-		t.Fatalf("解析键盘 JSON 失败：%v", err)
-	}
-	if len(keyboard.InlineKeyboard) != 1 {
-		t.Fatalf("键盘行数=%d，期望仅功能行=1", len(keyboard.InlineKeyboard))
-	}
-
-	row := keyboard.InlineKeyboard[0]
-	if len(row) != 3 {
-		t.Fatalf("功能按钮数=%d，期望=3", len(row))
-	}
-	if row[2].URL != "https://t.me/fw999/123" {
-		t.Fatalf("对应按钮链接=%q", row[2].URL)
+func TestParseKJJSONRejectsYu28SumMismatch(t *testing.T) {
+	raw := []byte(`{"data":[{"nbr":"1","number":"1+2+3=9","combination":"小双"}],"message":"success"}`)
+	if _, err := parseKJJSON(raw); err == nil {
+		t.Fatal("expected yu28 sum mismatch error")
 	}
 }

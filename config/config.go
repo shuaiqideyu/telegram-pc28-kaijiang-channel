@@ -10,9 +10,10 @@ import (
 )
 
 type Config struct {
-	BotToken        string
-	ChannelID       int64
-	ChannelUsername string
+	BotToken  string
+	ChannelID int64
+	Yu28Base  string
+	Yu28Key   string
 }
 
 func NewConfig() (*Config, error) {
@@ -24,12 +25,19 @@ func NewConfig() (*Config, error) {
 	}
 
 	cfg := &Config{
-		BotToken:        os.Getenv("TELEGRAM_BOT_TOKEN"),
-		ChannelID:       chID,
-		ChannelUsername: strings.TrimPrefix(os.Getenv("TELEGRAM_CHANNEL_USERNAME"), "@"),
+		BotToken:  os.Getenv("TELEGRAM_BOT_TOKEN"),
+		ChannelID: chID,
+		Yu28Base:  strings.TrimRight(strings.TrimSpace(os.Getenv("YU28_BASE")), "/"),
+		Yu28Key:   strings.TrimSpace(os.Getenv("YU28_API_KEY")),
+	}
+	if cfg.Yu28Base == "" {
+		cfg.Yu28Base = "https://yu28.top"
 	}
 	if cfg.BotToken == "" {
 		return nil, fmt.Errorf("缺少 TELEGRAM_BOT_TOKEN")
+	}
+	if cfg.Yu28Key == "" {
+		return nil, fmt.Errorf("缺少 YU28_API_KEY")
 	}
 	return cfg, nil
 }

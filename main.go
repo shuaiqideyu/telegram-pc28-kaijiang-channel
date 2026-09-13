@@ -31,8 +31,7 @@ func main() {
 		log.Printf("[图片] 渲染器初始化失败，降级纯文字: %v", err)
 	}
 
-	service.InitPC28()
-	service.InitYilouCache()
+	service.InitDrawSource(cfg.Yu28Base, cfg.Yu28Key)
 
 	var initialQ int
 	if r, err := service.FetchLatestDraw(); err == nil {
@@ -41,7 +40,6 @@ func main() {
 	}
 
 	drawCh := service.StartDrawMonitor(initialQ)
-	go tgService.StartUpdateHandler()
 	log.Println("服务已启动")
 
 	lastQ := initialQ
@@ -53,7 +51,6 @@ func main() {
 			r.Qihao, r.Numbers[0], r.Numbers[1], r.Numbers[2], r.Sum)
 
 		tgService.Broadcast(r)
-		service.GetYilouCache().RefreshNow()
 		lastQ = r.Qihao
 	}
 }
