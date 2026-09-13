@@ -54,3 +54,32 @@ func TestParseKJJSONRejectsYu28SumMismatch(t *testing.T) {
 		t.Fatal("expected yu28 sum mismatch error")
 	}
 }
+
+func TestFormatMissStatsPrefersPaddedKeys(t *testing.T) {
+	got := formatMissStats(map[string]int{
+		"00": 6655, "0": 1,
+		"27": 2558,
+		"01": 2411, "1": 2,
+		"26": 1999,
+		"13": 2,
+		"14": 29,
+		"极大": 17,
+		"极小": 10,
+		"豹子": 32,
+	})
+	want := "PC28未开统计\n\n0:6655\n27:2558\n\n1:2411\n26:1999\n\n13:2\n14:29\n\n极大:17\n极小:10\n豹子:32"
+	if got != want {
+		t.Fatalf("got=%q want=%q", got, want)
+	}
+}
+
+func TestFormatMissStatsFallsBackToBareKeys(t *testing.T) {
+	got := formatMissStats(map[string]int{
+		"0": 3, "27": 4, "1": 5, "26": 6, "13": 7, "14": 8,
+		"极大": 9, "极小": 10, "豹子": 11,
+	})
+	want := "PC28未开统计\n\n0:3\n27:4\n\n1:5\n26:6\n\n13:7\n14:8\n\n极大:9\n极小:10\n豹子:11"
+	if got != want {
+		t.Fatalf("got=%q want=%q", got, want)
+	}
+}

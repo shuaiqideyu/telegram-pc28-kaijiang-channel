@@ -26,9 +26,10 @@ var (
 	drawClient *http.Client
 	drawAPIKey string
 	kjURL      string
+	ylURL      string
 )
 
-// InitDrawSource 初始化 yu28 开奖客户端（只读 kj.json）。
+// InitDrawSource 初始化 yu28 开奖客户端（kj.json 轮询，yl.json 按需统计）。
 func InitDrawSource(baseURL, apiKey string) {
 	drawAPIKey = strings.TrimSpace(apiKey)
 	base := strings.TrimRight(strings.TrimSpace(baseURL), "/")
@@ -36,6 +37,7 @@ func InitDrawSource(baseURL, apiKey string) {
 		base = "https://yu28.top"
 	}
 	kjURL = base + "/api/kj.json"
+	ylURL = base + "/api/yl.json"
 	drawClient = &http.Client{Timeout: 5 * time.Second, Transport: ipv4Transport()}
 	if _, err := httpGet(drawClient, kjURL); err != nil {
 		log.Printf("[开奖] 预热失败: %v", err)
@@ -75,6 +77,46 @@ func fetchKJOnce() (*DrawResult, error) {
 		return nil, err
 	}
 	return parseKJJSON(data)
+}
+
+func fetchYLMap() (map[string]int, error) {
+	body, err := httpGet(drawClient, ylURL)
+	if err != nil {
+		return nil, err
+	}
+	var raw struct {
+		Data map[string]int `json:"data"`
+	}
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, err
+	}
+	if len(raw.Data) == 0 {
+		return nil, fmt.Errorf("yl data empty")
+	}
+	return raw.Data, nil
+}
+
+func missVal(m map[string]int, keys ...string) int {
+	for _, key := range keys {
+		if v, ok := m[key]; ok {
+			return v
+		}
+	}
+	return 0
+}
+
+func formatMissStats(m map[string]int) string {
+	return fmt.Sprintf("PC28未开统计\n\n0:%d\n27:%d\n\n1:%d\n26:%d\n\n13:%d\n14:%d\n\n极大:%d\n极小:%d\n豹子:%d",
+		missVal(m, "00", "0"),
+		missVal(m, "27"),
+		missVal(m, "01", "1"),
+		missVal(m, "26"),
+		missVal(m, "13"),
+		missVal(m, "14"),
+		missVal(m, "极大"),
+		missVal(m, "极小"),
+		missVal(m, "豹子"),
+	)
 }
 
 func parseKJJSON(data []byte) (*DrawResult, error) {

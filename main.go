@@ -40,6 +40,10 @@ func main() {
 	}
 
 	drawCh := service.StartDrawMonitor(initialQ)
+	go tgService.StartUpdateHandler()
+	if cfg.DebugDM {
+		log.Println("私信调试模式：不向频道播报，私信发送 1 预览本期效果")
+	}
 	log.Println("服务已启动")
 
 	lastQ := initialQ
@@ -50,7 +54,9 @@ func main() {
 		log.Printf("[NEW] %d期 %d+%d+%d=%d",
 			r.Qihao, r.Numbers[0], r.Numbers[1], r.Numbers[2], r.Sum)
 
-		tgService.Broadcast(r)
+		if !cfg.DebugDM {
+			tgService.Broadcast(r)
+		}
 		lastQ = r.Qihao
 	}
 }

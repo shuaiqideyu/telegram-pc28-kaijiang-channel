@@ -14,6 +14,7 @@ type Config struct {
 	ChannelID int64
 	Yu28Base  string
 	Yu28Key   string
+	DebugDM   bool
 }
 
 func NewConfig() (*Config, error) {
@@ -29,6 +30,7 @@ func NewConfig() (*Config, error) {
 		ChannelID: chID,
 		Yu28Base:  strings.TrimRight(strings.TrimSpace(os.Getenv("YU28_BASE")), "/"),
 		Yu28Key:   strings.TrimSpace(os.Getenv("YU28_API_KEY")),
+		DebugDM:   parseBoolEnv(os.Getenv("DEBUG_DM")),
 	}
 	if cfg.Yu28Base == "" {
 		cfg.Yu28Base = "https://yu28.top"
@@ -40,4 +42,13 @@ func NewConfig() (*Config, error) {
 		return nil, fmt.Errorf("缺少 YU28_API_KEY")
 	}
 	return cfg, nil
+}
+
+func parseBoolEnv(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
 }
