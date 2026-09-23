@@ -18,6 +18,7 @@ import (
 
 const (
 	queueSize     = 16
+	tgHTTPTimeout = 15 * time.Second
 	siteURL       = "https://pcddkj.com/"
 	nangongURL    = "https://t.me/ng99"
 	statsCallback = "stats_query"
@@ -50,17 +51,16 @@ func NewTelegramService(cfg *config.Config) (*TelegramService, error) {
 	}
 	log.Printf("Telegram Bot授权成功: @%s", bot.Self.UserName)
 
-	tgIP := resolveDNS("api.telegram.org")
-	tp := pinnedTransport(tgIP)
+	tp := ipv4Transport()
 	tp.MaxIdleConnsPerHost = 3
 	tp.IdleConnTimeout = 180 * time.Second
-	log.Printf("[TG] HTTP客户端就绪 (IP: %s)", tgIP)
+	log.Printf("[TG] HTTP客户端就绪 (IPv4, %s)", tgHTTPTimeout)
 
 	base := "https://api.telegram.org/bot" + cfg.BotToken
 	ts := &TelegramService{
 		bot:       bot,
 		channelID: cfg.ChannelID,
-		hc:        &http.Client{Transport: tp},
+		hc:        &http.Client{Timeout: tgHTTPTimeout, Transport: tp},
 		sendURL:   base + "/sendMessage",
 		photoURL:  base + "/sendPhoto",
 		meURL:     base + "/getMe",

@@ -104,7 +104,7 @@
 ├── config/
 │   └── config.go           # 环境变量加载与校验
 └── service/
-    ├── http.go             # DNS pin、通用 HTTP GET
+    ├── http.go             # IPv4 HTTP 客户端、通用 GET
     ├── draw.go             # 开奖轮询与 JSON 解析
     ├── telegram.go         # 播报队列与发送
     ├── draw_image.go       # 开奖图渲染
