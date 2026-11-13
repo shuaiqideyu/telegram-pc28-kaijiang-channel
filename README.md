@@ -45,7 +45,7 @@
                  │   yu28.top JSON API     │
                  │  /api/kj.json           │
                  └───────────┬─────────────┘
-                             │ HTTP 轮询 + X-Api-Key
+                             │ HTTP 轮询 + 查询参数 key
                              ▼
 ┌──────────────┐     ┌───────────────┐     ┌────────────────────┐
 │   main.go    │────▶│  draw monitor │────▶│ drawCh (新期号)     │
@@ -71,7 +71,7 @@
 | `{YU28_BASE}/api/kj.json` | 最新开奖（期号 `nbr`、三位和式 `number`、组合） |
 | `{YU28_BASE}/api/yl.json` | 未开遗漏（统计按钮按需拉取） |
 
-身份用期号 `nbr`，不用「最新一条」。个人 Key 只走请求头 `X-Api-Key`，禁止写成 `?key=`。
+身份用期号 `nbr`，不用「最新一条」。个人 Key 只走查询参数 `key`。
 
 本项目**不依赖**数据库或 Redis。
 
@@ -142,7 +142,7 @@ DEBUG_DM=1
 | --- | --- | --- |
 | `TELEGRAM_BOT_TOKEN` | 是 | BotFather 发放的 Token |
 | `TELEGRAM_CHANNEL_ID` | 是 | 频道数字 ID（通常为负数） |
-| `YU28_API_KEY` | 是 | yu28 个人 Key，请求时放进 `X-Api-Key` |
+| `YU28_API_KEY` | 是 | yu28 个人 Key，请求时放进查询参数 `key` |
 | `YU28_BASE` | 否 | 默认 `https://yu28.top` |
 | `DEBUG_DM` | 否 | `1` / `true` / `yes` / `on` 时不向频道播报，仅私信 `1` 预览 |
 

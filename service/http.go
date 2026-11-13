@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 )
 
@@ -26,25 +29,51 @@ func ipv4Transport() *http.Transport {
 	}
 }
 
-func httpGet(client *http.Client, url string) ([]byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func redactYu28Err(path string, err error) error {
+	if err == nil {
+		return nil
+	}
+	var ue *url.Error
+	if errors.As(err, &ue) && ue.Err != nil {
+		err = ue.Err
+	}
+	msg := err.Error()
+	if strings.Contains(msg, "key=") || strings.Contains(msg, "api_key=") || (drawAPIKey != "" && strings.Contains(msg, drawAPIKey)) {
+		return fmt.Errorf("yu28 %s", path)
+	}
+	return fmt.Errorf("yu28 %s: %v", path, err)
+}
+
+func httpGet(client *http.Client, rawURL string) ([]byte, error) {
+	u, err := url.Parse(rawURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("yu28 request")
+	}
+	if drawAPIKey != "" {
+		q := u.Query()
+		q.Del("api_key")
+		q.Set("key", drawAPIKey)
+		u.RawQuery = q.Encode()
+	}
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	if err != nil {
+		return nil, fmt.Errorf("yu28 %s", u.Path)
 	}
 	req.Header.Set("User-Agent", chromeUA)
 	req.Header.Set("Accept", "application/json, text/plain, */*")
-	if drawAPIKey != "" {
-		req.Header.Set("X-Api-Key", drawAPIKey)
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, redactYu28Err(u.Path, err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		io.Copy(io.Discard, resp.Body)
 		return nil, fmt.Errorf("status %d", resp.StatusCode)
 	}
-	return io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("yu28 %s", u.Path)
+	}
+	return body, nil
 }
